@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  /* Ask the Board — token system
+     ink     : primary dark, backgrounds + headline text
+     paper   : warm light surface, the "index card" color
+     brass   : the claim-stub accent — the one warm, tactile color
+     ledger  : answered/settled state (a quiet green, like ledger ink)
+     rust    : pending/attention state
+     line    : hairline rule color on paper
+  */
+  --color-ink: #1b2430;
+  --color-ink-soft: #333d4c;
+  --color-paper: #f2eee4;
+  --color-paper-dim: #e8e2d2;
+  --color-brass: #c1922f;
+  --color-brass-deep: #96701f;
+  --color-ledger: #4f7a5c;
+  --color-rust: #b5533c;
+  --color-line: rgba(27, 36, 48, 0.14);
+  --color-line-on-ink: rgba(242, 238, 228, 0.16);
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-paper: var(--color-paper);
+  --color-paper-dim: var(--color-paper-dim);
+  --color-brass: var(--color-brass);
+  --color-brass-deep: var(--color-brass-deep);
+  --color-ledger: var(--color-ledger);
+  --color-rust: var(--color-rust);
+  --color-line: var(--color-line);
+  --color-line-on-ink: var(--color-line-on-ink);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  border-color: var(--color-line);
+}
+
+body {
+  background-color: var(--color-paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
