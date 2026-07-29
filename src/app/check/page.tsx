@@ -77,9 +77,9 @@ export default function CheckPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
             <input
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="XXXX-XXXX"
-              className="flex-1 rounded-md border border-line bg-white/40 px-4 py-3 font-mono text-lg tracking-[0.12em] text-ink placeholder:text-ink-soft/40 focus:outline-none focus:ring-2 focus:ring-brass"
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Enter your claim code"
+              className="flex-1 rounded-md border border-line bg-white/40 px-4 py-3 font-mono text-lg tracking-[0.02em] text-ink placeholder:text-ink-soft/40 focus:outline-none focus:ring-2 focus:ring-brass"
             />
             <button
               type="submit"
