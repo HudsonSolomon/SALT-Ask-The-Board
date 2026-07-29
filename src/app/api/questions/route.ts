@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { generateClaimCode } from "@/lib/claimCode";
+import {
+  buildCustomCode,
+  generateClaimCode,
+  normalizeCustomCode,
+  validateCustomCode,
+} from "@/lib/claimCode";
 
 const MAX_LENGTH = 1000;
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const question = typeof body?.question === "string" ? body.question.trim() : "";
+  const customCodeInput =
+    typeof body?.customCode === "string" ? body.customCode : "";
 
   if (!question) {
     return NextResponse.json({ error: "A question is required." }, { status: 400 });
@@ -18,11 +25,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  let customPart: string | null = null;
+  if (customCodeInput.trim()) {
+    const validationError = validateCustomCode(customCodeInput);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+    customPart = normalizeCustomCode(customCodeInput);
+  }
+
   const supabase = supabaseAdmin();
 
-  // Extremely low collision odds, but retry once with a fresh code just in case.
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const code = generateClaimCode();
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = customPart ? buildCustomCode(customPart) : generateClaimCode();
     const { error } = await supabase.from("questions").insert({
       code,
       question,
@@ -32,7 +47,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ code });
     }
     if (error.code !== "23505") {
-      // Not a unique-constraint violation — a real problem, stop retrying.
       return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
     }
   }

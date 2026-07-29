@@ -3,18 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { TicketStub } from "@/components/TicketStub";
+import { CUSTOM_CODE_MIN_LENGTH, CUSTOM_CODE_MAX_LENGTH } from "@/lib/claimCode";
 
 const MAX_LENGTH = 1000;
 
 export default function HomePage() {
   const [question, setQuestion] = useState("");
+  const [customCode, setCustomCode] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
   const [error, setError] = useState("");
   const [code, setCode] = useState<string | null>(null);
 
+  const customCodeTooShort =
+    customCode.trim().length > 0 && customCode.trim().length < CUSTOM_CODE_MIN_LENGTH;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!question.trim()) return;
+    if (!question.trim() || customCodeTooShort) return;
 
     setStatus("sending");
     setError("");
@@ -23,7 +28,7 @@ export default function HomePage() {
       const res = await fetch("/api/questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, customCode }),
       });
       const data = await res.json();
 
@@ -75,9 +80,9 @@ export default function HomePage() {
                 </h1>
                 <p className="mt-4 text-ink-soft leading-relaxed">
                   Nothing about who you are is ever collected — no name, no
-                  email, no login. Submit your question, and you&rsquo;ll get
-                  a private code to check for a reply later. Only board
-                  members can read what you write.
+                  email, no login. Pick your own claim code below so it&rsquo;s
+                  easy to remember, and only board members can read what you
+                  write.
                 </p>
               </div>
 
@@ -103,12 +108,42 @@ export default function HomePage() {
                   <span className="text-xs text-ink-soft/60">
                     {question.length}/{MAX_LENGTH}
                   </span>
+                </div>
+
+                <label
+                  htmlFor="customCode"
+                  className="mb-2 mt-5 block font-display text-sm uppercase tracking-[0.18em] text-ink-soft"
+                >
+                  Make up a claim code
+                </label>
+                <input
+                  id="customCode"
+                  value={customCode}
+                  onChange={(e) =>
+                    setCustomCode(e.target.value.slice(0, CUSTOM_CODE_MAX_LENGTH))
+                  }
+                  placeholder="Something only you'd know or remember"
+                  className="w-full rounded-md border border-line bg-paper px-4 py-3 font-body text-base text-ink placeholder:text-ink-soft/50 focus:outline-none focus:ring-2 focus:ring-brass"
+                />
+                <p className="mt-2 text-xs text-ink-soft/60">
+                  At least {CUSTOM_CODE_MIN_LENGTH} characters. We&rsquo;ll add a
+                  few random characters to the end so no one can guess it —
+                  you&rsquo;ll see your full code after submitting. There&rsquo;s
+                  no way to recover it if you forget it, so remember it exactly.
+                </p>
+                {customCodeTooShort && (
+                  <p className="mt-1 text-xs text-rust">
+                    Use at least {CUSTOM_CODE_MIN_LENGTH} characters.
+                  </p>
+                )}
+
+                <div className="mt-2">
                   {error && <span className="text-xs text-rust">{error}</span>}
                 </div>
 
                 <button
                   type="submit"
-                  disabled={!question.trim() || status === "sending"}
+                  disabled={!question.trim() || customCodeTooShort || status === "sending"}
                   className="mt-5 w-full rounded-md bg-ink px-5 py-3 font-display text-sm uppercase tracking-[0.16em] text-paper transition-opacity hover:opacity-90 disabled:opacity-40 sm:w-auto"
                 >
                   {status === "sending" ? "Submitting..." : "Submit privately"}
@@ -135,6 +170,7 @@ export default function HomePage() {
                   onClick={() => {
                     setCode(null);
                     setQuestion("");
+                    setCustomCode("");
                   }}
                   className="text-sm text-ink-soft hover:text-ink transition-colors"
                 >
