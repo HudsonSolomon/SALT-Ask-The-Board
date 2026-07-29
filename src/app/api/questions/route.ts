@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
-  buildCustomCode,
   generateClaimCode,
   normalizeCustomCode,
   validateCustomCode,
@@ -25,23 +24,38 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let customPart: string | null = null;
+  let customCode: string | null = null;
   if (customCodeInput.trim()) {
     const validationError = validateCustomCode(customCodeInput);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
-    customPart = normalizeCustomCode(customCodeInput);
+    customCode = normalizeCustomCode(customCodeInput);
   }
 
   const supabase = supabaseAdmin();
 
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const code = customPart ? buildCustomCode(customPart) : generateClaimCode();
+  if (customCode) {
     const { error } = await supabase.from("questions").insert({
-      code,
+      code: customCode,
       question,
     });
+
+    if (!error) {
+      return NextResponse.json({ code: customCode });
+    }
+    if (error.code === "23505") {
+      return NextResponse.json(
+        { error: "That code is already taken. Try a different one." },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
+  }
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = generateClaimCode();
+    const { error } = await supabase.from("questions").insert({ code, question });
 
     if (!error) {
       return NextResponse.json({ code });

@@ -126,10 +126,10 @@ export default function HomePage() {
                   className="w-full rounded-md border border-line bg-paper px-4 py-3 font-body text-base text-ink placeholder:text-ink-soft/50 focus:outline-none focus:ring-2 focus:ring-brass"
                 />
                 <p className="mt-2 text-xs text-ink-soft/60">
-                  At least {CUSTOM_CODE_MIN_LENGTH} characters. We&rsquo;ll add a
-                  few random characters to the end so no one can guess it —
-                  you&rsquo;ll see your full code after submitting. There&rsquo;s
-                  no way to recover it if you forget it, so remember it exactly.
+                  At least {CUSTOM_CODE_MIN_LENGTH} characters. This is exactly
+                  what you&rsquo;ll type in later to check for a reply, so pick
+                  something only you would know or guess — and there&rsquo;s no
+                  way to recover it if you forget it.
                 </p>
                 {customCodeTooShort && (
                   <p className="mt-1 text-xs text-rust">
